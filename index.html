@@ -1,1 +1,471 @@
-PLACEHOLDER_FULL_HTML_FROM_USER_WITH_PRESENCE_TRACKING
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A3D62" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nosso Time" />
+  <title>Nosso Time — Visão Geral e Ação Rápida</title>
+  <style>
+    :root {
+      --primary: #0A3D62;
+      --primary-dark: #072942;
+      --primary-soft: rgba(10, 61, 98, 0.11);
+      --bg: #EEF3F8;
+      --surface: #FFFFFF;
+      --surface-2: #F8FAFC;
+      --text: #0F172A;
+      --muted: #64748B;
+      --border: #DCE4EE;
+      --success: #15803D;
+      --success-bg: #DCFCE7;
+      --warning: #B45309;
+      --warning-bg: #FEF3C7;
+      --danger: #B91C1C;
+      --danger-bg: #FEE2E2;
+      --purple: #6D28D9;
+      --purple-bg: #EDE9FE;
+      --shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+      --radius: 14px;
+    }
+    html[data-theme="dark"] {
+      --primary: #2B95CC;
+      --primary-dark: #0A3D62;
+      --primary-soft: rgba(43, 149, 204, 0.16);
+      --bg: #08101C;
+      --surface: #101B2D;
+      --surface-2: #16243A;
+      --text: #F1F5F9;
+      --muted: #94A3B8;
+      --border: #23334C;
+      --success: #4ADE80;
+      --success-bg: rgba(74, 222, 128, 0.14);
+      --warning: #FBBF24;
+      --warning-bg: rgba(251, 191, 36, 0.14);
+      --danger: #F87171;
+      --danger-bg: rgba(248, 113, 113, 0.14);
+      --purple: #C084FC;
+      --purple-bg: rgba(192, 132, 252, 0.14);
+      --shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Inter", system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 88px; font-size: clamp(14px, 1.05vw, 15px); }
+    .topbar { background: linear-gradient(135deg, #0A3D62 0%, #072942 100%); color: #fff; padding: clamp(10px, 2vw, 14px) clamp(12px, 3vw, 22px); position: sticky; top: 0; z-index: 40; box-shadow: 0 4px 14px rgba(7, 41, 66, 0.22); }
+    .topbar-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark { width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.25); display: grid; place-items: center; font-weight: 900; font-size: 14px; }
+    .brand h1 { font-size: clamp(15px, 1.5vw, 18px); font-weight: 800; }
+    .brand small { font-size: 11px; opacity: 0.85; display: block; }
+    .topbar-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .icon-btn { background: rgba(255,255,255,0.13); color: #fff; border: 1px solid rgba(255,255,255,0.22); border-radius: 10px; padding: 8px 10px; min-height: 36px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+    .icon-btn:active { transform: scale(0.97); }
+    .spin { display: inline-block; transition: transform 0.35s ease; }
+    .icon-btn.refreshing .spin { transform: rotate(360deg); }
+    .dot-badge { background: #EF4444; color: #fff; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 999px; }
+    .screen-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px clamp(10px, 2.5vw, 20px); overflow-x: auto; position: sticky; top: 58px; z-index: 30; }
+    .screen-bar-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 6px; }
+    .pill { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); padding: 7px 12px; min-height: 34px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .container { max-width: 1200px; margin: clamp(12px, 2vw, 22px) auto; padding: 0 clamp(10px, 2.5vw, 20px); }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: clamp(12px, 2vw, 18px); margin-bottom: 12px; box-shadow: var(--shadow); }
+    .row-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .card-title { font-size: clamp(15px, 1.3vw, 17px); font-weight: 800; color: var(--primary); }
+    .overview-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; margin-bottom: 12px; }
+    .kpi { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 12px; padding: 11px 13px; cursor: pointer; text-align: left; transition: transform 0.12s; }
+    .kpi:hover { transform: translateY(-2px); }
+    .kpi.active { outline: 2px solid var(--primary); }
+    .kpi.amber { border-left-color: var(--warning); }
+    .kpi.purple { border-left-color: var(--purple); }
+    .kpi.red { border-left-color: var(--danger); }
+    .kpi.green { border-left-color: var(--success); }
+    .kpi-num { font-size: clamp(20px, 2.2vw, 26px); font-weight: 900; line-height: 1.1; }
+    .kpi-txt { font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 2px; }
+    .btn-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 14px; min-height: 38px; border-radius: 10px; border: 1px solid transparent; font-size: 13px; font-weight: 700; cursor: pointer; transition: transform 0.1s, filter 0.15s; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-outline { background: var(--surface-2); color: var(--primary); border-color: var(--border); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-sm { padding: 7px 11px; min-height: 34px; font-size: 12px; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { padding: 7px 12px; min-height: 34px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 12px; font-weight: 700; cursor: pointer; }
+    .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; }
+    .item-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 13px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .item-card:hover { border-color: var(--primary); }
+    .badges { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+    .badge { padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; text-transform: uppercase; background: var(--primary-soft); color: var(--primary); }
+    .badge.urgente { background: var(--danger-bg); color: var(--danger); }
+    .badge.alta { background: var(--warning-bg); color: var(--warning); }
+    .badge.andamento { background: var(--warning-bg); color: var(--warning); }
+    .badge.validacao { background: var(--purple-bg); color: var(--purple); }
+    .badge.resolvida { background: var(--success-bg); color: var(--success); }
+    .badge.online { background: var(--success-bg); color: var(--success); }
+    .mini-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 6px; }
+    .bar > div { height: 100%; background: var(--primary); }
+    label { display: block; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin: 10px 0 4px; }
+    input, select, textarea { width: 100%; padding: 9px 11px; min-height: 38px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; background: var(--surface-2); color: var(--text); }
+    textarea { min-height: 64px; resize: vertical; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .drawer { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .drawer.open { display: block; }
+    .timeline { border-left: 2px solid var(--primary); padding-left: 12px; margin-top: 8px; }
+    .tl { margin-bottom: 10px; font-size: 12px; }
+    .tl small { color: var(--muted); display: block; }
+    .presence-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin-top: 8px; }
+    .presence-box { border: 1px solid var(--border); background: var(--surface-2); border-radius: 10px; padding: 10px; }
+    .toast { position: fixed; bottom: 74px; right: 14px; left: 14px; max-width: 420px; margin-left: auto; background: #072942; color: #fff; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; opacity: 0; transform: translateY(8px); transition: all 0.2s; z-index: 60; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px; gap: 4px; z-index: 40; }
+    .nav-btn { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 800; cursor: pointer; min-height: 40px; border-radius: 10px; }
+    .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">NT</div>
+        <div>
+          <h1>Nosso Time</h1>
+          <small id="top-status">Visão Geral • Secretário</small>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="refresh-btn" onclick="atualizarPagina()"><span class="spin">↻</span> Atualizar</button>
+        <button class="icon-btn" id="install-btn" onclick="baixarOuInstalarApp()">⬇ <span id="install-label">Baixar App</span></button>
+        <button class="icon-btn" onclick="toggleDrawer('notif-drawer')">Alertas <span class="dot-badge" id="notif-count">3</span></button>
+        <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌓</button>
+        <button class="icon-btn" onclick="resetDemo()">↺ Base</button>
+      </div>
+    </div>
+  </header>
+  <div class="screen-bar">
+    <div class="screen-bar-inner">
+      <button class="pill" data-screen="login" onclick="go('login')">1. Login</button>
+      <button class="pill" data-screen="cadastro" onclick="go('cadastro')">2. Cadastro</button>
+      <button class="pill active" data-screen="painel" onclick="go('painel')">3. Visão Geral</button>
+      <button class="pill" data-screen="novo-comando" onclick="go('novo-comando')">4. + Comando</button>
+      <button class="pill" data-screen="detalhes" onclick="go('detalhes')">5. Ação Rápida</button>
+      <button class="pill" data-screen="subdemanda" onclick="go('subdemanda')">6. + Subdemanda</button>
+      <button class="pill" data-screen="admin" onclick="go('admin')">7. Admin</button>
+      <button class="pill" data-screen="perfil" onclick="go('perfil')">8. Perfil</button>
+    </div>
+  </div>
+  <main class="container">
+    <div class="drawer" id="install-drawer">
+      <div class="row-between" style="margin-bottom:6px;">
+        <strong id="install-title" style="color:var(--primary);">Instalar / Atualizar Atalho</strong>
+        <button class="btn btn-sm btn-outline" onclick="toggleDrawer('install-drawer')">Fechar</button>
+      </div>
+      <div id="install-body" style="font-size:13px;line-height:1.5;"></div>
+    </div>
+    <div class="drawer" id="notif-drawer">
+      <div class="row-between" style="margin-bottom:6px;">
+        <strong style="color:var(--primary);">Alertas</strong>
+        <button class="btn btn-sm btn-outline" onclick="clearNotifs()">Limpar</button>
+      </div>
+      <div id="notif-body"></div>
+    </div>
+    <section id="screen-login" class="screen">
+      <div class="card" style="max-width:520px;margin:12px auto;">
+        <div class="card-title">Entrar em 1 Clique</div>
+        <div class="btn-grid" style="margin-bottom:14px;">
+          <button class="btn btn-primary" onclick="quickLogin('Secretário')">Entrar: Secretário</button>
+          <button class="btn btn-outline" onclick="quickLogin('Assessor')">Entrar: Assessor</button>
+          <button class="btn btn-outline" onclick="quickLogin('Equipe')">Entrar: Equipe</button>
+          <button class="btn btn-outline" onclick="quickLogin('Setor')">Entrar: Setor</button>
+        </div>
+        <label>E-mail</label>
+        <input type="email" id="login-email" value="gabinete@nossotime.gov.br" />
+        <label>Senha</label>
+        <input type="password" id="login-pass" value="••••••••" />
+        <div class="btn-grid">
+          <button class="btn btn-primary" onclick="quickLogin('Secretário')">Entrar</button>
+          <button class="btn btn-outline" onclick="go('cadastro')">Criar Conta</button>
+        </div>
+      </div>
+    </section>
+    <section id="screen-cadastro" class="screen">
+      <div class="card" style="max-width:640px;margin:10px auto;">
+        <div class="card-title">Cadastro Rápido</div>
+        <div class="grid-2">
+          <div>
+            <label>Nome</label>
+            <input type="text" id="cad-nome" placeholder="Nome completo" />
+          </div>
+          <div>
+            <label>E-mail</label>
+            <input type="email" id="cad-email" placeholder="email@setor.gov.br" />
+          </div>
+        </div>
+        <label>Setor</label>
+        <div class="chips" id="cad-setor-chips">
+          <button class="chip active" onclick="pickChip(this, 'cad-setor-chips')">Manutenção</button>
+          <button class="chip" onclick="pickChip(this, 'cad-setor-chips')">Transporte</button>
+          <button class="chip" onclick="pickChip(this, 'cad-setor-chips')">Saúde</button>
+          <button class="chip" onclick="pickChip(this, 'cad-setor-chips')">Educação</button>
+          <button class="chip" onclick="pickChip(this, 'cad-setor-chips')">Infraestrutura</button>
+        </div>
+        <label>Perfil</label>
+        <div class="chips" id="cad-perfil-chips">
+          <button class="chip active" onclick="pickChip(this, 'cad-perfil-chips')">Demandado</button>
+          <button class="chip" onclick="pickChip(this, 'cad-perfil-chips')">Equipe</button>
+          <button class="chip" onclick="pickChip(this, 'cad-perfil-chips')">Assessor</button>
+        </div>
+        <div class="btn-grid">
+          <button class="btn btn-primary" onclick="enviarCadastro()">Solicitar Acesso</button>
+          <button class="btn btn-outline" onclick="go('login')">Login</button>
+        </div>
+      </div>
+    </section>
+    <section id="screen-painel" class="screen active">
+      <div class="card" style="padding:12px 16px;">
+        <div class="row-between">
+          <div>
+            <div class="card-title">Visão Geral</div>
+            <div class="mini-meta" id="resumo-linha">Tudo em um só lugar • Toque nos cards ou botões</div>
+          </div>
+          <div class="btn-grid" style="margin-top:0;">
+            <button class="btn btn-sm btn-outline" onclick="atualizarPagina()">↻ Atualizar</button>
+            <button class="btn btn-sm btn-primary" onclick="go('novo-comando')">+ Novo Comando</button>
+          </div>
+        </div>
+      </div>
+      <div class="overview-strip">
+        <button class="kpi" data-st="aberta" onclick="toggleStatus('aberta', this)"><div class="kpi-num" id="k-aberta">0</div><div class="kpi-txt">Abertas</div></button>
+        <button class="kpi amber" data-st="em_andamento" onclick="toggleStatus('em_andamento', this)"><div class="kpi-num" id="k-andamento">0</div><div class="kpi-txt">Em Andamento</div></button>
+        <button class="kpi purple" data-st="aguardando_validacao" onclick="toggleStatus('aguardando_validacao', this)"><div class="kpi-num" id="k-validacao">0</div><div class="kpi-txt">Validação</div></button>
+        <button class="kpi red" data-st="atrasada" onclick="toggleStatus('atrasada', this)"><div class="kpi-num" id="k-atrasada">0</div><div class="kpi-txt">Atrasadas</div></button>
+        <button class="kpi green" data-st="resolvida" onclick="toggleStatus('resolvida', this)"><div class="kpi-num" id="k-resolvida">0</div><div class="kpi-txt">Resolvidas</div></button>
+      </div>
+      <div class="card" style="padding:12px;">
+        <div class="row-between" style="margin-bottom:10px;">
+          <div class="chips" id="origem-chips">
+            <button class="chip active" data-o="todas" onclick="setOrigem('todas', this)">Todas</button>
+            <button class="chip" data-o="secretario" onclick="setOrigem('secretario', this)">Secretário</button>
+            <button class="chip" data-o="equipe" onclick="setOrigem('equipe', this)">Equipe</button>
+            <button class="chip" data-o="setor" onclick="setOrigem('setor', this)">Setores</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <input type="search" id="busca" placeholder="Filtrar..." oninput="renderPainel()" style="width:150px;min-height:34px;padding:6px 10px;" />
+            <button class="btn btn-sm btn-outline" onclick="ciclarOrdem()" id="ordem-btn">Ordem: Recente</button>
+          </div>
+        </div>
+        <div class="cards-grid" id="lista-demandas"></div>
+      </div>
+      <div class="card" style="padding:12px 16px;">
+        <div class="row-between">
+          <div>
+            <div class="card-title">Online Agora e Último Acesso</div>
+            <div class="mini-meta">Último acesso exibido para todos, exceto Secretário e Assessor.</div>
+          </div>
+          <div class="btn-grid" style="margin-top:0;">
+            <button class="btn btn-sm btn-outline" onclick="alternarMinhaPresenca()">Alternar Meu Status Online</button>
+          </div>
+        </div>
+        <div class="presence-list" id="presenca-lista"></div>
+      </div>
+    </section>
+    <section id="screen-novo-comando" class="screen">
+      <div class="card">
+        <div class="card-title">+ Novo Comando (Clique para Montar)</div>
+        <label>Modelos Prontos (1 clique)</label>
+        <div class="btn-grid">
+          <button class="btn btn-sm btn-outline" onclick="presetComando('Vistoria e reparo imediato no local', 'alta', 3)">Vistoria + Reparo</button>
+          <button class="btn btn-sm btn-outline" onclick="presetComando('Apoio de transporte e logística de carga', 'urgente', 1)">Transporte Urgente</button>
+          <button class="btn btn-sm btn-outline" onclick="presetComando('Inspeção preventiva e rotina do setor', 'normal', 7)">Inspeção Rotina</button>
+        </div>
+        <label>Título</label>
+        <input type="text" id="cmd-titulo" placeholder="Clique em um modelo acima ou digite curto" />
+        <label>Responsável</label>
+        <div class="chips" id="cmd-resp-chips">
+          <button class="chip active" onclick="pickChip(this, 'cmd-resp-chips')">Marcos (Equipe)</button>
+          <button class="chip" onclick="pickChip(this, 'cmd-resp-chips')">Patrícia (Equipe)</button>
+          <button class="chip" onclick="pickChip(this, 'cmd-resp-chips')">Diego (Campo)</button>
+        </div>
+        <label>Urgência / Prazo</label>
+        <div class="chips" id="cmd-prio-chips">
+          <button class="chip" data-p="urgente|1" onclick="pickChip(this, 'cmd-prio-chips')">Urgente (1d)</button>
+          <button class="chip active" data-p="alta|3" onclick="pickChip(this, 'cmd-prio-chips')">Alta (3d)</button>
+          <button class="chip" data-p="normal|7" onclick="pickChip(this, 'cmd-prio-chips')">Normal (7d)</button>
+        </div>
+        <label>Anexo (Opcional)</label>
+        <input type="file" id="cmd-file" accept="image/*,.pdf" />
+        <div class="btn-grid" style="margin-top:14px;">
+          <button class="btn btn-primary" onclick="salvarComando()">Enviar Comando</button>
+          <button class="btn btn-outline" onclick="go('painel')">Voltar</button>
+        </div>
+      </div>
+    </section>
+    <section id="screen-detalhes" class="screen">
+      <div class="card" id="det-header"></div>
+      <div class="card">
+        <div class="row-between">
+          <div class="card-title">Ações em 1 Clique</div>
+          <button class="btn btn-sm btn-outline" onclick="go('subdemanda')">+ Subdemanda</button>
+        </div>
+        <div class="btn-grid">
+          <button class="btn btn-primary" onclick="acaoIrLocal()">Ir ao Local</button>
+          <button class="btn btn-outline" onclick="acaoEvidenciaRapida()">Anexar Foto / Evidência Rápida</button>
+          <button class="btn btn-success" onclick="acaoValidar()">Concluir / Validar</button>
+        </div>
+        <input type="file" id="det-file" accept="image/*,.pdf" style="margin-top:10px;" />
+      </div>
+      <div class="card">
+        <div class="card-title">Subdemandas</div>
+        <div id="det-subs" style="margin-top:8px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Histórico</div>
+        <div class="timeline" id="det-tl"></div>
+      </div>
+    </section>
+    <section id="screen-subdemanda" class="screen">
+      <div class="card">
+        <div class="card-title">+ Subdemanda (Clique no Setor e Prazo)</div>
+        <label>Setor</label>
+        <div class="chips" id="sub-setor-chips">
+          <button class="chip active" onclick="pickChip(this, 'sub-setor-chips')">Manutenção</button>
+          <button class="chip" onclick="pickChip(this, 'sub-setor-chips')">Transporte</button>
+          <button class="chip" onclick="pickChip(this, 'sub-setor-chips')">Saúde</button>
+          <button class="chip" onclick="pickChip(this, 'sub-setor-chips')">Educação</button>
+          <button class="chip" onclick="pickChip(this, 'sub-setor-chips')">Infraestrutura</button>
+        </div>
+        <label>Nível (Máx. 2)</label>
+        <div class="chips" id="sub-nivel-chips">
+          <button class="chip active" data-n="1" onclick="pickChip(this, 'sub-nivel-chips')">Nível 1</button>
+          <button class="chip" data-n="2" onclick="pickChip(this, 'sub-nivel-chips')">Nível 2</button>
+        </div>
+        <label>Prazo</label>
+        <div class="chips" id="sub-prazo-chips">
+          <button class="chip" data-d="1" onclick="pickChip(this, 'sub-prazo-chips')">1 dia</button>
+          <button class="chip active" data-d="2" onclick="pickChip(this, 'sub-prazo-chips')">2 dias</button>
+          <button class="chip" data-d="5" onclick="pickChip(this, 'sub-prazo-chips')">5 dias</button>
+        </div>
+        <label>Observação curta (opcional)</label>
+        <input type="text" id="sub-obs" placeholder="Ex.: Troca de lâmpadas e disjuntor" />
+        <div class="btn-grid" style="margin-top:14px;">
+          <button class="btn btn-primary" onclick="salvarSubdemanda()">Criar Subdemanda</button>
+          <button class="btn btn-outline" onclick="go('detalhes')">Voltar</button>
+        </div>
+      </div>
+    </section>
+    <section id="screen-admin" class="screen">
+      <div class="card">
+        <div class="card-title">Aprovações Pendentes</div>
+        <div id="adm-lista" style="margin-top:10px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Criar Usuário Aprovado em 1 Clique</div>
+        <div class="grid-2">
+          <div>
+            <label>Nome</label>
+            <input type="text" id="adm-nome" placeholder="Nome do servidor" />
+          </div>
+          <div>
+            <label>Setor / Perfil</label>
+            <div class="chips" id="adm-role-chips" style="margin-top:6px;">
+              <button class="chip active" onclick="pickChip(this, 'adm-role-chips')">Saúde • Setor</button>
+              <button class="chip" onclick="pickChip(this, 'adm-role-chips')">Manutenção • Equipe</button>
+              <button class="chip" onclick="pickChip(this, 'adm-role-chips')">Transporte • Setor</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="criarUsuarioDireto()">Criar Ativo</button>
+      </div>
+    </section>
+    <section id="screen-perfil" class="screen">
+      <div class="card">
+        <div class="card-title">Perfil e Controles</div>
+        <div class="mini-meta" style="margin-top:8px;">Nosso Time • Conta Ativa</div>
+        <div class="btn-grid" style="margin-top:14px;">
+          <button class="btn btn-outline" onclick="atualizarPagina()">↻ Atualizar Página</button>
+          <button class="btn btn-outline" onclick="baixarOuInstalarApp()">⬇ Baixar / Instalar App</button>
+          <button class="btn btn-outline" onclick="toggleTheme()">Tema Claro/Escuro</button>
+          <button class="btn btn-outline" onclick="go('login')">Trocar Perfil</button>
+          <button class="btn btn-danger" onclick="go('login')">Sair</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-nav="painel" onclick="go('painel')">Visão Geral</button>
+    <button class="nav-btn" data-nav="detalhes" onclick="go('detalhes')">Ação</button>
+    <button class="nav-btn" data-nav="admin" onclick="go('admin')">Admin</button>
+    <button class="nav-btn" data-nav="perfil" onclick="go('perfil')">Perfil</button>
+  </nav>
+  <script>
+    const KEY = 'nosso_time_fast_v4';
+    const ordens = ['recente', 'prioridade', 'prazo'];
+    let ordemIdx = 0;
+    let installPrompt = null;
+    const initialData = {
+      perfil: 'Secretário',
+      origem: 'todas',
+      status: null,
+      selectedId: 'CMD-001',
+      notifs: ['CMD-001 em andamento', 'SUB-01 pendente na Manutenção', '2 cadastros para aprovar'],
+      usuarios: [
+        { id: 'u-sec', nome: 'Secretário Titular', role: 'Secretário', setor: 'Gabinete', online: true, ultimoAcesso: 'Hoje, 17:40' },
+        { id: 'u-ass', nome: 'Assessor Executivo', role: 'Assessor', setor: 'Gabinete', online: true, ultimoAcesso: 'Hoje, 17:35' },
+        { id: 'u-eq1', nome: 'Marcos Andrade', role: 'Equipe', setor: 'Manutenção', online: true, ultimoAcesso: 'Hoje, 17:32' },
+        { id: 'u-eq2', nome: 'Patrícia Lima', role: 'Equipe', setor: 'Transporte', online: false, ultimoAcesso: 'Hoje, 16:15' },
+        { id: 'u-set1', nome: 'Unidade Saúde Centro', role: 'Setor', setor: 'Saúde', online: true, ultimoAcesso: 'Hoje, 17:20' },
+        { id: 'u-set2', nome: 'Base Transporte', role: 'Setor', setor: 'Transporte', online: false, ultimoAcesso: 'Ontem, 18:05' }
+      ],
+      pendentes: [
+        { id: 1, nome: 'Fernanda Oliveira', info: 'Saúde • Demandado' },
+        { id: 2, nome: 'Rafael Mendes', info: 'Transporte • Equipe' }
+      ],
+      demandas: [
+        { id: 'CMD-001', titulo: 'Vistoria e reparo predial', origem: 'secretario', prioridade: 'alta', status: 'em_andamento', dias: 3, setor: 'Manutenção', resp: 'Marcos', subs: [{ cod: 'SUB-01', setor: 'Manutenção', nivel: 1, dias: 2, obs: 'Telhado e calhas', feita: false }], tl: ['Comando emitido (3d)', 'SUB-01 enviada para Manutenção'] },
+        { id: 'CMD-002', titulo: 'Entrega de insumos e rota', origem: 'equipe', prioridade: 'urgente', status: 'aguardando_validacao', dias: 1, setor: 'Transporte', resp: 'Patrícia', subs: [{ cod: 'SUB-02', setor: 'Transporte', nivel: 1, dias: 1, obs: 'Rota de entrega', feita: true }], tl: ['Comando urgente (1d)', 'Evidência enviada para validação'] },
+        { id: 'DEM-003', titulo: 'Apoio de transporte em campo', origem: 'setor', prioridade: 'normal', status: 'aberta', dias: 5, setor: 'Transporte', resp: 'Transporte', subs: [], tl: ['Demanda aberta entre setores (5d)'] }
+      ]
+    };
+    let db = load();
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; document.getElementById('install-label').textContent = 'Baixar App'; });
+    function load() { try { const parsed = JSON.parse(localStorage.getItem(KEY)); return parsed && parsed.usuarios ? parsed : structuredClone(initialData); } catch { return structuredClone(initialData); } }
+    function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+    function resetDemo() { db = structuredClone(initialData); save(); renderAll(); toast('Base reiniciada.'); }
+    function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
+    function go(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('screen-' + id)?.classList.add('active'); document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.dataset.screen === id)); document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.nav === id)); if (id === 'detalhes') renderDetalhes(); if (id === 'admin') renderAdmin(); if (id === 'painel') renderPainel(); }
+    function toggleDrawer(id) { document.getElementById(id).classList.toggle('open'); if (id === 'notif-drawer') renderNotifs(); }
+    function toggleTheme() { const h = document.documentElement; h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark'; }
+    async function atualizarPagina() { const btn = document.getElementById('refresh-btn'); btn?.classList.add('refreshing'); toast('Atualizando...'); try { if ('caches' in window) { const keys = await caches.keys(); await Promise.all(keys.map(k => caches.delete(k))); } } catch (_) {} setTimeout(() => { const u = new URL(location.href); u.searchParams.set('v', Date.now()); location.replace(u.toString()); }, 240); }
+    async function baixarOuInstalarApp() { if (installPrompt) { installPrompt.prompt(); const res = await installPrompt.userChoice; installPrompt = null; toast(res.outcome === 'accepted' ? 'App instalado.' : 'Cancelado.'); return; } const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent); const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone; document.getElementById('install-title').textContent = isStandalone ? 'App Instalado' : (isIOS ? 'Instalar no iPhone/iPad' : 'Instalar Atalho'); document.getElementById('install-body').innerHTML = isStandalone ? 'Já está no atalho. Use <strong>↻ Atualizar</strong> para recarregar.' : (isIOS ? 'No Safari: toque em <strong>Compartilhar</strong> → <strong>Adicionar à Tela de Início</strong>.' : 'No menu do navegador: toque em <strong>Instalar aplicativo</strong> ou <strong>Adicionar à tela inicial</strong>.'); document.getElementById('install-drawer').classList.add('open'); }
+    function pickChip(el, groupId) { document.querySelectorAll(`#${groupId} .chip`).forEach(c => c.classList.remove('active')); el.classList.add('active'); }
+    function activeChipText(groupId) { return document.querySelector(`#${groupId} .chip.active`)?.textContent.trim() || ''; }
+    function horaAgora() { const now = new Date(); return 'Hoje, ' + now.toTimeString().slice(0, 5); }
+    function quickLogin(role) { db.perfil = role; document.getElementById('top-status').textContent = `Visão Geral • ${role}`; const u = db.usuarios.find(x => x.role === role); if (u) { u.online = true; u.ultimoAcesso = horaAgora(); } save(); toast(`Entrou como ${role}`); go('painel'); }
+    function alternarMinhaPresenca() { const u = db.usuarios.find(x => x.role === db.perfil) || db.usuarios[0]; u.online = !u.online; u.ultimoAcesso = horaAgora(); save(); renderPresenca(); toast(`${u.nome}: ${u.online ? 'Online agora' : 'Offline'}`); }
+    function renderPresenca() { const ocultaUltimoAcesso = (role) => role === 'Secretário' || role === 'Assessor'; document.getElementById('presenca-lista').innerHTML = db.usuarios.map(u => `<div class="presence-box"><div class="row-between"><strong>${u.nome}</strong><span class="badge ${u.online ? 'online' : ''}">${u.online ? 'Online agora' : 'Offline'}</span></div><div class="mini-meta" style="margin-top:4px;">${u.role} • ${u.setor}</div><div class="mini-meta" style="margin-top:4px;">${ocultaUltimoAcesso(u.role) ? 'Último acesso: oculto para ' + u.role : 'Último acesso: ' + u.ultimoAcesso}</div></div>`).join(''); }
+    function enviarCadastro() { const nome = document.getElementById('cad-nome').value.trim() || 'Novo Usuário'; const setor = activeChipText('cad-setor-chips'); const perfil = activeChipText('cad-perfil-chips'); db.pendentes.push({ id: Date.now(), nome, info: `${setor} • ${perfil}` }); db.notifs.unshift(`Pendente: ${nome} (${setor})`); save(); toast('Enviado para aprovação.'); go('login'); }
+    function setOrigem(o, el) { db.origem = o; document.querySelectorAll('#origem-chips .chip').forEach(c => c.classList.remove('active')); el.classList.add('active'); save(); renderPainel(); }
+    function toggleStatus(st, el) { db.status = db.status === st ? null : st; document.querySelectorAll('.kpi').forEach(k => k.classList.remove('active')); if (db.status && el) el.classList.add('active'); save(); renderPainel(); }
+    function ciclarOrdem() { ordemIdx = (ordemIdx + 1) % ordens.length; document.getElementById('ordem-btn').textContent = `Ordem: ${ordens[ordemIdx]}`; renderPainel(); }
+    function renderPainel() { const all = db.demandas; document.getElementById('k-aberta').textContent = all.filter(d => d.status === 'aberta').length; document.getElementById('k-andamento').textContent = all.filter(d => d.status === 'em_andamento').length; document.getElementById('k-validacao').textContent = all.filter(d => d.status === 'aguardando_validacao').length; document.getElementById('k-atrasada').textContent = all.filter(d => d.status === 'atrasada').length; document.getElementById('k-resolvida').textContent = all.filter(d => d.status === 'resolvida').length; const onlineCount = db.usuarios.filter(u => u.online).length; document.getElementById('resumo-linha').textContent = `${all.length} demandas • ${onlineCount} online agora • Perfil: ${db.perfil}`; const busca = (document.getElementById('busca')?.value || '').toLowerCase().trim(); const rank = { urgente: 1, alta: 2, normal: 3 }; let list = all.filter(d => { const okO = db.origem === 'todas' || d.origem === db.origem; const okS = !db.status || d.status === db.status; const okB = !busca || `${d.id} ${d.titulo} ${d.setor} ${d.resp}`.toLowerCase().includes(busca); return okO && okS && okB; }); if (ordens[ordemIdx] === 'prioridade') list.sort((a, b) => rank[a.prioridade] - rank[b.prioridade]); if (ordens[ordemIdx] === 'prazo') list.sort((a, b) => a.dias - b.dias); document.getElementById('lista-demandas').innerHTML = list.map(d => { const tot = d.subs.length; const done = d.subs.filter(s => s.feita).length; const pct = tot ? Math.round((done / tot) * 100) : (d.status === 'resolvida' ? 100 : 30); const stBadge = d.status === 'resolvida' ? 'resolvida' : d.status === 'aguardando_validacao' ? 'validacao' : 'andamento'; return `<div class="item-card"><div><div class="row-between"><div class="badges"><strong>${d.id}</strong><span class="badge ${d.prioridade}">${d.prioridade}</span><span class="badge ${stBadge}">${d.status.replace('_', ' ')}</span></div><span class="mini-meta">${d.dias}d • ${d.setor}</span></div><div style="font-weight:800;margin-top:8px;">${d.titulo}</div><div class="mini-meta" style="margin-top:4px;">${d.resp} • Sub: ${done}/${tot}</div><div class="bar"><div style="width:${pct}%"></div></div></div><div class="btn-grid" style="margin-top:4px;"><button class="btn btn-sm btn-primary" onclick="abrirDetalhe('${d.id}')">Abrir</button>${d.status !== 'resolvida' ? `<button class="btn btn-sm btn-success" onclick="concluirRapido('${d.id}')">Concluir</button>` : ''}</div></div>`; }).join('') || '<div class="mini-meta">Sem itens neste filtro.</div>'; renderPresenca(); }
+    function concluirRapido(id) { const d = db.demandas.find(x => x.id === id); if (!d) return; d.status = 'resolvida'; d.dias = 0; d.tl.unshift('Concluído em 1 clique'); save(); renderPainel(); toast(`${id} concluída.`); }
+    function presetComando(titulo, prio, dias) { document.getElementById('cmd-titulo').value = titulo; document.querySelectorAll('#cmd-prio-chips .chip').forEach(c => { c.classList.toggle('active', c.dataset.p.startsWith(prio)); }); toast('Modelo aplicado.'); }
+    function salvarComando() { const titulo = document.getElementById('cmd-titulo').value.trim() || 'Comando rápido operacional'; const resp = activeChipText('cmd-resp-chips'); const [prio, dias] = (document.querySelector('#cmd-prio-chips .chip.active')?.dataset.p || 'alta|3').split('|'); const id = 'CMD-' + String(db.demandas.length + 1).padStart(3, '0'); db.demandas.unshift({ id, titulo, origem: 'secretario', prioridade: prio, status: 'aberta', dias: Number(dias), setor: 'Equipe', resp, subs: [], tl: [`Criado (${dias}d)`] }); db.selectedId = id; db.notifs.unshift(`Novo ${id}: ${titulo}`); save(); document.getElementById('cmd-titulo').value = ''; toast(`${id} enviado.`); go('painel'); }
+    function abrirDetalhe(id) { db.selectedId = id; save(); go('detalhes'); }
+    function cur() { return db.demandas.find(d => d.id === db.selectedId) || db.demandas[0]; }
+    function renderDetalhes() { const d = cur(); document.getElementById('det-header').innerHTML = `<div class="row-between"><div class="badges"><strong>${d.id}</strong><span class="badge ${d.prioridade}">${d.prioridade}</span><span class="badge andamento">${d.status.replace('_', ' ')}</span></div><span class="mini-meta">${d.dias}d • ${d.setor} • ${d.resp}</span></div><div style="font-size:17px;font-weight:800;margin-top:8px;">${d.titulo}</div>`; document.getElementById('det-subs').innerHTML = d.subs.length ? d.subs.map((s, i) => `<div class="item-card" style="margin-bottom:8px;"><div class="row-between"><strong>${s.cod} • ${s.setor} (Nv ${s.nivel})</strong><span class="badge ${s.feita ? 'resolvida' : 'andamento'}">${s.feita ? 'Feita' : s.dias + 'd'}</span></div><div class="mini-meta">${s.obs || 'Execução do setor'}</div>${!s.feita ? `<button class="btn btn-sm btn-success" onclick="fecharSub(${i})">Marcar Feita</button>` : ''}</div>`).join('') : '<div class="mini-meta">Sem subdemandas.</div>'; document.getElementById('det-tl').innerHTML = d.tl.map(t => `<div class="tl"><strong>${t}</strong><small>Registrado</small></div>`).join(''); }
+    function acaoIrLocal() { const d = cur(); d.status = 'em_andamento'; d.tl.unshift('Ir ao local'); save(); renderDetalhes(); renderPainel(); toast('Em andamento.'); }
+    function acaoEvidenciaRapida() { const d = cur(); d.status = 'aguardando_validacao'; d.tl.unshift('Evidência anexada'); save(); renderDetalhes(); renderPainel(); toast('Enviado para validação.'); }
+    function acaoValidar() { const d = cur(); d.status = 'resolvida'; d.dias = 0; d.tl.unshift('Resolvida'); save(); renderDetalhes(); renderPainel(); toast('Resolvida.'); }
+    function salvarSubdemanda() { const d = cur(); const setor = activeChipText('sub-setor-chips'); const nivel = Number(document.querySelector('#sub-nivel-chips .chip.active')?.dataset.n || 1); const dias = Number(document.querySelector('#sub-prazo-chips .chip.active')?.dataset.d || 2); const obs = document.getElementById('sub-obs').value.trim(); const cod = `SUB-0${d.subs.length + 1}`; d.subs.push({ cod, setor, nivel, dias, obs, feita: false }); d.setor = setor; d.status = 'em_andamento'; d.tl.unshift(`${cod} → ${setor} (Nv ${nivel}, ${dias}d)`); save(); document.getElementById('sub-obs').value = ''; toast(`${cod} criada.`); go('detalhes'); }
+    function fecharSub(i) { const d = cur(); d.subs[i].feita = true; d.tl.unshift(`${d.subs[i].cod} concluída`); if (d.subs.every(s => s.feita)) { d.status = 'aguardando_validacao'; d.tl.unshift('Subdemandas concluídas → Validação'); } save(); renderDetalhes(); renderPainel(); toast('Subdemanda concluída.'); }
+    function renderAdmin() { document.getElementById('adm-lista').innerHTML = db.pendentes.length ? db.pendentes.map(p => `<div class="item-card" style="margin-bottom:8px;"><div class="row-between"><div><strong>${p.nome}</strong> <span class="mini-meta">• ${p.info}</span></div><div class="btn-grid" style="margin-top:0;"><button class="btn btn-sm btn-success" onclick="decidir(${p.id}, true)">Aprovar</button><button class="btn btn-sm btn-danger" onclick="decidir(${p.id}, false)">Rejeitar</button></div></div></div>`).join('') : '<div class="mini-meta">Sem pendências.</div>'; }
+    function decidir(id, ok) { const p = db.pendentes.find(x => x.id === id); db.pendentes = db.pendentes.filter(x => x.id !== id); save(); renderAdmin(); toast(`${p?.nome || 'Usuário'} ${ok ? 'aprovado' : 'rejeitado'}.`); }
+    function criarUsuarioDireto() { const nome = document.getElementById('adm-nome').value.trim(); const role = activeChipText('adm-role-chips'); if (!nome) { toast('Digite o nome.'); return; } const [setor, perfil] = role.split('•').map(s => s.trim()); db.usuarios.push({ id: 'u-' + Date.now(), nome, role: perfil || 'Setor', setor: setor || 'Geral', online: true, ultimoAcesso: horaAgora() }); save(); renderPresenca(); document.getElementById('adm-nome').value = ''; toast(`${nome} (${role}) ativo.`); }
+    function renderNotifs() { document.getElementById('notif-count').textContent = db.notifs.length; document.getElementById('notif-body').innerHTML = db.notifs.length ? db.notifs.map(n => 
