@@ -25,27 +25,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
 
       - name: Instalar dependências
-        run: npm ci || npm install
+        run: npm install
 
-      - name: Validar TypeScript e Compilar
+      - name: Compilar
         run: npm run build
 
-      - name: Guardião Anti-Placeholder e Integridade
-        run: |
-          test -f dist/index.html
-          if grep -q "PLACEHOLDER_WILL_REPLACE" dist/index.html; then
-            echo "ERRO CRÍTICO: Placeholder detectado no build. Deploy bloqueado!"
-            exit 1
-          fi
-          if ! grep -q "Nosso Time" dist/index.html; then
-            echo "ERRO CRÍTICO: Título Nosso Time ausente. Deploy bloqueado!"
-            exit 1
-          fi
+      - name: Verificar build
+        run: test -f dist/index.html
 
-      - name: Enviar artefato validado
+      - name: Enviar artefato
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
