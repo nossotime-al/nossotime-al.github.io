@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nosso-time-ts-v3';
+const CACHE_NAME = 'nosso-time-inteligencia-v4';
 const CORE = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {
