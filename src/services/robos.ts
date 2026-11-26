@@ -1,5 +1,5 @@
 import { BASE_PADRAO } from '../data/padrao';
-import { EstadoApp, Usuario } from '../types';
+import { EstadoApp, MensagemChat, Usuario } from '../types';
 
 export function clonarEstado<T>(obj: T): T {
   try {
@@ -27,6 +27,23 @@ export function horaCurta(): string {
 
 export function deveOcultarUltimoAcesso(u?: Pick<Usuario, 'cargo'> | null): boolean {
   return u?.cargo === 'Secretário' || u?.cargo === 'Assessor';
+}
+
+export function ehNucleoGabinete(cargo?: string | null): boolean {
+  return cargo === 'Secretário' || cargo === 'Assessor';
+}
+
+export function filtrarConversaPrivada(
+  mensagens: MensagemChat[],
+  eu: string,
+  alvo: string
+): MensagemChat[] {
+  if (!eu || !alvo) return [];
+  return mensagens.filter(
+    (m) =>
+      (m.de === eu && m.para === alvo) ||
+      (m.de === alvo && m.para === eu)
+  );
 }
 
 export function sanitizarEstado(raw: unknown): EstadoApp {
