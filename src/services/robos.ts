@@ -44,7 +44,8 @@ export function sanitizarEstado(raw: unknown): EstadoApp {
     usuarios: Array.isArray(r.usuarios) && r.usuarios.length ? r.usuarios : base.usuarios,
     mensagens: Array.isArray(r.mensagens) ? r.mensagens : base.mensagens,
     pendentes: Array.isArray(r.pendentes) ? r.pendentes : base.pendentes,
-    demandas: Array.isArray(r.demandas) ? r.demandas : base.demandas
+    demandas: Array.isArray(r.demandas) ? r.demandas : base.demandas,
+    agenda: Array.isArray(r.agenda) ? r.agenda : (base.agenda || [])
   };
 }
 
