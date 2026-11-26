@@ -28,6 +28,7 @@ export const MiniChat: React.FC<MiniChatProps> = ({
   onNotificar
 }) => {
   const [apenasOnline, setApenasOnline] = useState(true);
+  const [buscaContato, setBuscaContato] = useState('');
   const [texto, setTexto] = useState('');
   const [anexo, setAnexo] = useState<{ nome: string; tamanhoKB: number } | null>(null);
   const [gravando, setGravando] = useState(false);
@@ -43,8 +44,16 @@ export const MiniChat: React.FC<MiniChatProps> = ({
     return () => window.clearInterval(t);
   }, [gravando]);
 
-  const contatosFiltrados = apenasOnline ? usuarios.filter((u) => u.online) : usuarios;
-  const contatos = contatosFiltrados.length ? contatosFiltrados : usuarios;
+  const filtrados = usuarios.filter((u) => {
+    const okOnline = !apenasOnline || u.online;
+    const okBusca =
+      !buscaContato.trim() ||
+      u.nome.toLowerCase().includes(buscaContato.toLowerCase()) ||
+      u.setor.toLowerCase().includes(buscaContato.toLowerCase());
+    return okOnline && okBusca;
+  });
+
+  const contatos = filtrados.length ? filtrados : usuarios;
   const alvoAtivo = contatos.some((u) => u.nome === chatAlvo) ? chatAlvo : contatos[0]?.nome || 'Marcos';
   const alvoObj = usuarios.find((u) => u.nome === alvoAtivo) || contatos[0];
   const ocultarAcesso = deveOcultarUltimoAcesso(alvoObj);
@@ -119,28 +128,40 @@ export const MiniChat: React.FC<MiniChatProps> = ({
 
   return (
     <div>
+      <div className="sub" style={{ marginBottom: 8 }}>
+        🔒 Conversa com {alvoAtivo}. Apenas os participantes visualizam as mensagens.
+      </div>
+
       <div className="row-space">
-        <div className="chips" style={{ marginTop: 0 }}>
+        <button
+          type="button"
+          className={`chip ${apenasOnline ? 'active' : ''}`}
+          onClick={() => setApenasOnline((v) => !v)}
+        >
+          {apenasOnline ? '● Só Online' : 'Todos'}
+        </button>
+        <input
+          type="text"
+          value={buscaContato}
+          onChange={(e) => setBuscaContato(e.target.value)}
+          placeholder="Buscar pessoa ou setor..."
+          style={{ maxWidth: 200, minHeight: 36, fontSize: 12 }}
+        />
+      </div>
+
+      {alvoObj && (
+        <div style={{ marginTop: 8 }}>
           <button
             type="button"
-            className={`chip ${apenasOnline ? 'active' : ''}`}
-            onClick={() => setApenasOnline((v) => !v)}
+            className="person-chip"
+            onClick={() => onInspecionarPessoa(alvoObj.nome)}
           >
-            {apenasOnline ? 'Só Online Agora' : 'Todos os Contatos'}
+            <span className={alvoObj.online ? 'dot-live' : 'dot-off'} />
+            {alvoObj.nome} • {alvoObj.setor}
+            {!ocultarAcesso ? ` (${alvoObj.ultimoAcesso})` : ''}
           </button>
-          {alvoObj && (
-            <button
-              type="button"
-              className="person-chip"
-              onClick={() => onInspecionarPessoa(alvoObj.nome)}
-            >
-              <span className={alvoObj.online ? 'dot-live' : 'dot-off'} />
-              {alvoObj.nome} ({alvoObj.setor})
-              {!ocultarAcesso ? ` • ${alvoObj.ultimoAcesso}` : ''}
-            </button>
-          )}
         </div>
-      </div>
+      )}
 
       <div className="chat-contacts">
         {contatos.map((u) => (
