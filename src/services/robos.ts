@@ -1,107 +1,159 @@
+import { Demanda, EstadoApp, MensagemChat, PerfilTipo, Usuario } from '../types';
 import { BASE_PADRAO } from '../data/padrao';
-import { EstadoApp, MensagemChat, Usuario } from '../types';
 
-export function clonarEstado<T>(obj: T): T {
-  try {
-    return structuredClone(obj);
-  } catch {
-    return JSON.parse(JSON.stringify(obj));
-  }
+export function horaCurta(): string {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 export function agoraHora(): string {
-  try {
-    return 'Hoje, ' + new Date().toTimeString().slice(0, 5);
-  } catch {
-    return 'Hoje';
-  }
+  return `Hoje, ${horaCurta()}`;
 }
 
-export function horaCurta(): string {
-  try {
-    return new Date().toTimeString().slice(0, 5);
-  } catch {
-    return 'Agora';
-  }
+export function normalizarTexto(txt: string): string {
+  return String(txt || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
 }
 
-export function deveOcultarUltimoAcesso(u?: Pick<Usuario, 'cargo'> | null): boolean {
-  return u?.cargo === 'Secretário' || u?.cargo === 'Assessor';
+export function ehNucleoGabinete(cargo: PerfilTipo): boolean {
+  return cargo === 'Secretário' || cargo === 'Assessor' || cargo === 'Equipe de Gabinete';
 }
 
-export function ehNucleoGabinete(cargo?: string | null): boolean {
-  return cargo === 'Secretário' || cargo === 'Assessor';
+export function formatarAssinaturaCriador(usuario: Usuario): string {
+  if (usuario.cargo === 'Secretário') return `Secretário - ${usuario.nome}`;
+  if (usuario.cargo === 'Assessor') return `Secretário - ${usuario.nome} - Assessor`;
+  if (usuario.cargo === 'Equipe de Gabinete') return `Secretário - ${usuario.nome} - Equipe de Gabinete`;
+  return `${usuario.nome} (${usuario.setor})`;
+}
+
+export function deveOcultarUltimoAcesso(u?: Usuario | null): boolean {
+  if (!u) return false;
+  return u.cargo === 'Secretário' || u.cargo === 'Assessor';
+}
+
+export function setorJaCadastrado(setores: string[], candidato: string): boolean {
+  const alvo = normalizarTexto(candidato);
+  if (!alvo) return true;
+  return setores.some((s) => normalizarTexto(s) === alvo);
+}
+
+export function formatarTempoDecorrido(iniciadaEm: number | null): string {
+  if (!iniciadaEm || !Number.isFinite(iniciadaEm)) return 'Aguardando iniciar';
+  const diffMs = Math.max(0, Date.now() - iniciadaEm);
+  const mins = Math.floor(diffMs / 60000);
+  const horas = Math.floor(mins / 60);
+  const restoMins = mins % 60;
+  if (horas > 0) return `${horas}h ${String(restoMins).padStart(2, '0')}m contando`;
+  return `${mins}m contando`;
 }
 
 export function filtrarConversaPrivada(
   mensagens: MensagemChat[],
-  eu: string,
-  alvo: string
+  meuNome: string,
+  alvoNome: string
 ): MensagemChat[] {
-  if (!eu || !alvo) return [];
   return mensagens.filter(
     (m) =>
-      (m.de === eu && m.para === alvo) ||
-      (m.de === alvo && m.para === eu)
+      (m.de === meuNome && m.para === alvoNome) ||
+      (m.de === alvoNome && m.para === meuNome)
   );
 }
 
-export function sanitizarEstado(raw: unknown): EstadoApp {
-  const base = clonarEstado(BASE_PADRAO);
-  if (!raw || typeof raw !== 'object') return base;
-  const r = raw as Partial<EstadoApp>;
-
-  return {
-    perfil: r.perfil || base.perfil,
-    origem: r.origem || base.origem,
-    status: r.status ?? null,
-    selecionada: typeof r.selecionada === 'string' && r.selecionada ? r.selecionada : base.selecionada,
-    chatAlvo: typeof r.chatAlvo === 'string' && r.chatAlvo ? r.chatAlvo : base.chatAlvo,
-    alertas: Array.isArray(r.alertas) ? r.alertas.map(String) : base.alertas,
-    usuarios: Array.isArray(r.usuarios) && r.usuarios.length ? r.usuarios : base.usuarios,
-    mensagens: Array.isArray(r.mensagens) ? r.mensagens : base.mensagens,
-    pendentes: Array.isArray(r.pendentes) ? r.pendentes : base.pendentes,
-    demandas: Array.isArray(r.demandas) ? r.demandas : base.demandas,
-    agenda: Array.isArray(r.agenda) ? r.agenda : (base.agenda || [])
-  };
+export function clonarEstado(src: EstadoApp): EstadoApp {
+  return JSON.parse(JSON.stringify(src));
 }
 
-export function executarEsquadraoRobos(atual: EstadoApp): {
+export function sanitizarEstado(raw: unknown): EstadoApp {
+  try {
+    if (!raw || typeof raw !== 'object') return clonarEstado(BASE_PADRAO);
+    const obj = raw as Partial<EstadoApp>;
+    const base = clonarEstado(BASE_PADRAO);
+
+    const usuariosValidos =
+      Array.isArray(obj.usuarios) && obj.usuarios.length
+        ? obj.usuarios.filter((u) => u && typeof u.id === 'string' && typeof u.nome === 'string')
+        : base.usuarios;
+
+    const usuarioExiste = usuariosValidos.some((u) => u.id === obj.usuarioAtualId);
+    const setoresUnicos: string[] = [];
+    const listaSetores = Array.isArray(obj.setores) && obj.setores.length ? obj.setores : base.setores;
+    for (const s of listaSetores) {
+      if (typeof s === 'string' && s.trim() && !setorJaCadastrado(setoresUnicos, s)) {
+        setoresUnicos.push(s.trim());
+      }
+    }
+
+    const demandasValidas: Demanda[] = Array.isArray(obj.demandas)
+      ? obj.demandas
+          .filter((d) => d && typeof d.id === 'string' && typeof d.titulo === 'string')
+          .map((d) => ({
+            ...d,
+            criadoPorAssinatura: d.criadoPorAssinatura || 'Secretário - Claydon',
+            criadoPorNome: d.criadoPorNome || 'Claydon',
+            dias: Number.isFinite(Number(d.dias)) ? Number(d.dias) : 2,
+            iniciadaEm: typeof d.iniciadaEm === 'number' ? d.iniciadaEm : null,
+            marcados: Array.isArray(d.marcados) ? d.marcados : [],
+            cobrancas: Array.isArray(d.cobrancas) ? d.cobrancas : [],
+            log: Array.isArray(d.log) ? d.log : []
+          }))
+      : base.demandas;
+
+    return {
+      ...base,
+      ...obj,
+      usuarioAtualId: usuarioExiste && obj.usuarioAtualId ? obj.usuarioAtualId : usuariosValidos[0].id,
+      setores: setoresUnicos.length ? setoresUnicos : base.setores,
+      usuarios: usuariosValidos,
+      demandas: demandasValidas,
+      agenda: Array.isArray(obj.agenda) ? obj.agenda : base.agenda,
+      mensagens: Array.isArray(obj.mensagens) ? obj.mensagens : base.mensagens
+    };
+  } catch {
+    return clonarEstado(BASE_PADRAO);
+  }
+}
+
+export function executarEsquadraoRobos(estado: EstadoApp): {
   proximo: EstadoApp;
   reparos: number;
-  urgentes: string[];
+  criticas: Demanda[];
+  statusRobos: string;
 } {
-  const proximo = sanitizarEstado(atual);
+  const limpo = sanitizarEstado(estado);
   let reparos = 0;
-  const urgentes: string[] = [];
 
-  proximo.demandas = proximo.demandas.map((d) => {
-    const subs = Array.isArray(d.subs) ? [...d.subs] : [];
-    const log = Array.isArray(d.log) && d.log.length ? [...d.log] : ['Robô Guardião: log restaurado'];
-    if (!Array.isArray(d.subs) || !Array.isArray(d.log) || !d.log.length) reparos++;
-
+  const demandas = limpo.demandas.map((d) => {
     let status = d.status;
-    if (
-      subs.length > 0 &&
-      subs.every((s) => s.feita) &&
-      status !== 'resolvida' &&
-      status !== 'aguardando_validacao'
-    ) {
-      status = 'aguardando_validacao';
-      log.unshift('Robô de Prazos: subdemandas prontas → validação');
+    let dias = Number.isFinite(Number(d.dias)) ? Number(d.dias) : 2;
+    let iniciadaEm = d.iniciadaEm;
+
+    if (status === 'em_andamento' && !iniciadaEm) {
+      iniciadaEm = Date.now();
       reparos++;
     }
 
-    if (status !== 'resolvida' && (d.prioridade === 'urgente' || Number(d.dias) <= 1)) {
-      urgentes.push(d.id);
+    if (status !== 'resolvida' && dias <= 0 && status !== 'atrasada') {
+      status = 'atrasada';
+      reparos++;
     }
 
-    return { ...d, subs, log, status };
+    return { ...d, status, dias, iniciadaEm };
   });
 
-  if (urgentes.length && !proximo.alertas.some((a) => a.startsWith('Robô de Prazos:'))) {
-    proximo.alertas = [`Robô de Prazos: ${urgentes.join(', ')} em atenção.`, ...proximo.alertas].slice(0, 8);
-  }
+  const criticas = demandas.filter(
+    (d) =>
+      d.status !== 'resolvida' &&
+      (d.prioridade === 'urgente' || d.status === 'atrasada' || d.cobrancas.length > 0)
+  );
 
-  return { proximo, reparos, urgentes };
+  return {
+    proximo: { ...limpo, demandas },
+    reparos,
+    criticas,
+    statusRobos: `6 Robôs Ativos • ${criticas.length} alerta(s) crítico(s)`
+  };
 }
