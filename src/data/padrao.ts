@@ -96,5 +96,9 @@ export const BASE_PADRAO: EstadoApp = {
       subs: [],
       log: ['Aberta entre setores (5d)']
     }
+  ],
+  agenda: [
+    { id: 'ag-1', data: '27/11', hora: '10:00', titulo: 'Reunião de alinhamento com a equipe de Manutenção', local: 'Gabinete', criadoPor: 'Secretário' },
+    { id: 'ag-2', data: '27/11', hora: '14:30', titulo: 'Visita à unidade de Saúde do Centro', local: 'Unidade Centro', criadoPor: 'Assessor' }
   ]
 };
